@@ -8,9 +8,16 @@ class PaginationSchema(Schema):
     per_page = fields.Integer()
     page = fields.Integer()
     items = fields.List(fields.Nested(Schema))
+    pages = fields.Integer()
+    total = fields.Integer()
+    has_prev = fields.Boolean()
+    has_next = fields.Boolean()
+    next_num = fields.Integer()
+    prev_num = fields.Integer()
 
     def set_items_objects(self, object_class):
         self.items = fields.List(fields.Nested(object_class))
+
 
 def paginable():
     def decorator(func):
