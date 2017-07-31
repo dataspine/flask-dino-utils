@@ -2,15 +2,23 @@
 
 So, you are already a trained python developer and you love building projects using Flask, but there are some processes that you already do like a robot, like building the logic to paginate your api. How cool would it be if those things could be already wrapped up as possible? Well, search no more. Flask-Dino-Utils is here to help you build robust flask apis in no time. 
 
+## Assumptions
+
+In order to use this library we make some assumptions regarding your project.
+
+* You're using the following frameworks: `flask-classy`, `flask-sqlalchemy` and `marshmallow`.
+* Each of your objects has an autoincrement id. (With any name).
+* Your class attributes are exactly the same as your table columns.
+
 ## Our Big Baby: The FlaskImprovedView
 
 So, you love Flask-Classy and basically you use `FlaskView` as your superclass in any view you create. Well, say no more. You're not going to use that class anymore. Now, you will start using FlaskImprovedView which adds the following functionality:
 
 * In `GET /`: Adds pagination, sorting, and filtering your objects. For *pagination* you can use `per_page` and `page` parameters. For sorting you can use `sort_field` and `sort_dir` (asc and desc) parameters. And for filtering we have a custom and easy-to-use syntax to add *any* filter you need. See Flask-Dino Filter syntax for more information.
 * In `GET /<id>`: Does the logic needed to return the object.
-* In `POST /`: WIP.
-* In `PUT /<id>`: WIP.
-* In `DELETE /<id>`: WIP.
+* In `POST /`: Creates an object validating the json input using the `body_validation` attribute. It creates and returns the object.
+* In `PUT /<id>`: Modifies an existing object giving the id sent by parameter.
+* In `DELETE /<id>`: Delete (or alter an active field) an object.
 
 ### FlaskImprovedView attributes.
 
@@ -22,6 +30,8 @@ class UserPositionView(FlaskImprovedView):
     id_name = "id_user_position" # The id field name
     view_schema = UserPositionSchema() # The marshmallow schema object
     view_model = UserPosition # The SQLAlchemy Model class
+    db_engine = db # The database engine to make the operations
+    active_field = "active" # The active field if you do not want to delete any database registry but to alter a boolean value.
     body_validation = { # A set of definitions in the params validation process.
         "user_position_description": {
             "required": True,
@@ -35,6 +45,8 @@ class UserPositionView(FlaskImprovedView):
 * `view_schema`: The marshmallow serializer object instantiated.
 * `view_model`: The SQLAlchemy class to perform queries over orm model.
 * `body_validation`: The parameters validation in payload body in an object creation/modification. (See Payload validation for more info).
+* `db_engine`: The database engine to operate. Usually it's a SqlAlchemy initiated engine.
+* `active_field`: The name of the active attribute if you do not want to delete any table registry but to alter a boolean value.
 
 ## Individual decorators for custom endpoints.
 Okay, so you're saying: "Awesome! But my api is much more complex than 5 CRUD methods. I need more power man.". No problem! We added decorators for each individual operation so you can add it to any endpoint and customize your logic as well. Remember, we *only* want you to take care of your code and not repetitive and boring stuff.

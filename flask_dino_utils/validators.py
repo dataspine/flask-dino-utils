@@ -103,7 +103,7 @@ def _validate_params(origin, params_dict):
         data = request.json
     else:
         raise InternalServerError("An internal server error occurred during param validation.")
-    for param_key, param_data in params_dict.iteriitems():
+    for param_key, param_data in params_dict.iteritems():
         required = param_data.get("required", False)
         param_tuple = param_data.get("validation_tuple", [])
         validate_param_internal(data, param_key, param_tuple, required)
