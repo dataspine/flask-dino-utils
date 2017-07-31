@@ -87,10 +87,23 @@ def validate_param(origin, param_key, param_tuple, required=False):
             if origin == REQUEST_QUERY_PARAMS:
                 data = request.args
             elif origin == REQUEST_BODY:
-                data = request.body
+                data = request.json
             else:
                 raise InternalServerError("An internal server error occurred during param %s validation." % param_key)
             validate_param_internal(data, param_key, param_tuple, required)
             return func(*args, **kwargs)
         return update_wrapper(wrapper, func)
     return decorator
+
+
+def _validate_params(origin, params_dict):
+    if origin == REQUEST_QUERY_PARAMS:
+        data = request.args
+    elif origin == REQUEST_BODY:
+        data = request.json
+    else:
+        raise InternalServerError("An internal server error occurred during param validation.")
+    for param_key, param_data in params_dict.iteriitems():
+        required = param_data.get("required", False)
+        param_tuple = param_data.get("validation_tuple", [])
+        validate_param_internal(data, param_key, param_tuple, required)
