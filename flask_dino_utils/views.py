@@ -51,7 +51,7 @@ class FlaskImprovedView(FlaskView):
         else:
             if create_behavior == CREATE_NEW_OBJECT:
                 new_object = object_type()
-                for key, value in derivated_validation.get("fields", {}):
+                for key, value in derivated_validation.get("fields", {}).iteritems():
                     if value.get("derivated", False):
                         setattr(new_object, key, self.__process_derivated_attribute(derivated_data.get(key),
                                                                                     derivated_validation.get(key)))
@@ -77,13 +77,11 @@ class FlaskImprovedView(FlaskView):
 
     def post(self):
         _validate_params(REQUEST_BODY, self.body_validation)
-        import pdb; pdb.set_trace()
         data = request.json
         new_object = self.view_model()
         for key, value in data.iteritems():
             if type(value) in [list, dict]:
-                setattr(new_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key),
-                                                                            request.method))
+                setattr(new_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key)))
             elif key != self.id_name and key in self.view_model.__table__.columns.keys():
                 setattr(new_object, key, value)
         self.db_engine.session.add(new_object)
