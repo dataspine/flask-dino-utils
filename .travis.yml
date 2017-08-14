@@ -1,0 +1,14 @@
+language: python
+python:
+- '2.7'
+script:
+- touch foo
+deploy:
+  provider: pypi
+  distributions: sdist
+  user: franksalo
+  password:
+    secure: cnzWRuxkhM/C0JCHZppCsGFN9MiYyDNT0FyFzXLp1sB3xFvATgR3lQkNbKDlveG7Ygzd1ZrXpcdFL844703LbVyGBWwCNy+lKIDg0dcIKRFbhOOVXjor2kOr4bxXiWeJRcmkjXL1mEbmHpZ+tJN+1dDsROYSSUGRBJJ0VrAXyeCNVb9a5KH7wj8r1QrK0YRbMV0O5eCXQDKEvZwAwdBakwyUh/ZudQ56ei1lnS6qklp+YVHFnanpf4OXLnhilLBXse10IgXb4oVIIOlQhrZxAA2BqSETnr1zYV6J9MI1fcuo2Rt+/U927BX59vcrcqw4qCwbWABHsw7Hq7WkCzBV0rMCY//fC3o0IItWcH8Y71Mary9dvS5L9jsKEm0v/C7wpv7lxYPfgwOkVSrm/4xZQMPLMGJME/dBn/wOoi1O0aYS0/l74LBfyw6UJfNNgbtXGTOX7mA9fOwXm3+Fb0c4SOLAiZv3AgXsSI5qNh9aCuzcpWlKtDHRpAz3049veTaGJ1roHDzEw911vyl1Ua4yaKCvRD+9Ua+hsbvkvauWy7yWrmn+pJISEM/9YfqyR2hhDDn0gt6Et86HhNc5VpEto9G/c9jwzMxgJsQr5fbaEHkWzCHAPtxu7QrczW2M7u5Uy001onN7EFK10TMljpujZ/qsewShAlpCAjzKnuxU1KQ=
+  on:
+    tags: true
+    branch: master
