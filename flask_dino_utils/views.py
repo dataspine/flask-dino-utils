@@ -7,6 +7,9 @@ from sorting import _validate_sorting_parameters, sort
 from filtering import _filter_query
 from validators import _validate_params, REQUEST_BODY
 
+CREATE_NEW_OBJECT = "CREATE_NEW"
+ASSOCIATE_EXISTING_OBJECT = "ASSOCIATE_EXISTING"
+
 
 class FlaskImprovedView(FlaskView):
     route_base = "/"
@@ -16,17 +19,49 @@ class FlaskImprovedView(FlaskView):
     view_model = None
     db_engine = None
     body_validation = {
-        "attribute1": {
+        "sample_attribute": {
             "required": True,
             "validation_tuple": [(TYPE_VALIDATOR, unicode)]
+        },
+        "derivated_attribute": {
+            "derivated": True,
+            "object_type": None,
+            "id_name": "id_derivated",
+            "create_behavior": CREATE_NEW_OBJECT,
+            "many": False,
+            "fields": {
+                "attribute1": {
+                    "required": True,
+                    "validation_tuple": [(TYPE_VALIDATOR, unicode)]
+                }
+            }
         }
     }
-    index_filter_validation = {
-        "attribute1": {
-            "required": False,
-            "validation_tuple": [(TYPE_VALIDATOR, unicode)]
-        }
-    }
+
+    def __process_derivated_attribute(self, derivated_data, derivated_validation):
+        object_type = derivated_validation.get("object_type", None)
+        id_name = derivated_validation.get("id_name", None)
+        create_behavior = derivated_validation.get("create_behavior", None)
+        if type(derivated_data) == list and derivated_validation.get("many", True):
+            new_list_objects = list()
+            for items_objects in derivated_data:
+                new_object = self.__process_derivated_attribute(items_objects, derivated_validation)
+                new_list_objects.append(new_object)
+            return new_list_objects
+        else:
+            if create_behavior == CREATE_NEW_OBJECT:
+                new_object = object_type()
+                for key, value in derivated_validation.get("fields", {}):
+                    if value.get("derivated", False):
+                        setattr(new_object, key, self.__process_derivated_attribute(derivated_data.get(key),
+                                                                                    derivated_validation.get(key)))
+                    else:
+                        setattr(new_object, key, derivated_data.get(key))
+                return new_object
+            elif create_behavior == ASSOCIATE_EXISTING_OBJECT:
+                existing_object = object_type.query.get_or_404(derivated_data.get(id_name, None))
+                return existing_object
+        return None
 
     def index(self):
         _validate_sorting_parameters(request.args, self.view_model)
@@ -42,10 +77,14 @@ class FlaskImprovedView(FlaskView):
 
     def post(self):
         _validate_params(REQUEST_BODY, self.body_validation)
+        import pdb; pdb.set_trace()
         data = request.json
         new_object = self.view_model()
         for key, value in data.iteritems():
-            if key != self.id_name and key in self.view_model.__table__.columns.keys():
+            if type(value) in [list, dict]:
+                setattr(new_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key),
+                                                                            request.method))
+            elif key != self.id_name and key in self.view_model.__table__.columns.keys():
                 setattr(new_object, key, value)
         self.db_engine.session.add(new_object)
         try:
@@ -60,7 +99,9 @@ class FlaskImprovedView(FlaskView):
         merged_object = self.view_model.query.get_or_404(int(id))
         data = request.json
         for key, value in data.iteritems():
-            if key != self.id_name and key in self.view_model.__table__.columns.keys():
+            if type(value) in [list, dict]:
+                setattr(merged_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key)))
+            elif key != self.id_name and key in self.view_model.__table__.columns.keys():
                 setattr(merged_object, key, value)
         self.db_engine.session.merge(merged_object)
         try:

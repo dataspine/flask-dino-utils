@@ -36,6 +36,19 @@ class UserPositionView(FlaskImprovedView):
         "user_position_description": {
             "required": True,
             "validation_tuple": [(TYPE_VALIDATOR, unicode)]
+        },
+        "company": {
+            "derivated": True,
+            "object_type": Company,
+            "id_name": "id_company",
+            "create_behavior": ASSOCIATE_EXISTING_OBJECT,
+            "many": False,
+            "fields": {
+                "id_company": {
+                    "required": True,
+                    "validation_tuple": [(TYPE_VALIDATION, int)]
+                }
+            }
         }
     }
 ```
@@ -47,6 +60,20 @@ class UserPositionView(FlaskImprovedView):
 * `body_validation`: The parameters validation in payload body in an object creation/modification. (See Payload validation for more info).
 * `db_engine`: The database engine to operate. Usually it's a SqlAlchemy initiated engine.
 * `active_field`: The name of the active attribute if you do not want to delete any table registry but to alter a boolean value.
+
+## The derivated attributes
+As any object-oriented programming world, we will have relationships between objects that will end up in json (or list) inside our body.
+This object, obviously, requires a validation also. You may have a *single-object* or a *list of objects* that needs to be *created* or *associated* among with the main object.
+The parameters for the `body_validation` attribute for derivated objects are:
+* `derivated`: `True` specify that the attribute is a derivated one. Otherwise will not be taken by the validation algorithms.
+* `object_type`: Same as the view, we need to know the object type of your derivated param.
+* `id_name`: We need to know which of the fields is the id attribute.
+* `create_behavior`: This is an important one. You may define: 
+    * `ASSOCIATE_EXISTING_OBJECT`: In this case, whether is a `POST` or a `PUT` method, the method will look for the id of the object sent and will be associating it to our main object. It will *not* create a new one.
+    * `CREATE_NEW_OBJECT: In this case, a new object (or objects) will be created among with our object creation.
+* `many`: If it is `True` the view will expect a list of derivated objects. If it is `False` will expect only one.
+* `fields`: In this case, we will be defining the validation fields inside this key.
+
 
 ## Individual decorators for custom endpoints.
 Okay, so you're saying: "Awesome! But my api is much more complex than 5 CRUD methods. I need more power man.". No problem! We added decorators for each individual operation so you can add it to any endpoint and customize your logic as well. Remember, we *only* want you to take care of your code and not repetitive and boring stuff.

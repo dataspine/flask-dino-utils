@@ -96,14 +96,23 @@ def validate_param(origin, param_key, param_tuple, required=False):
     return decorator
 
 
-def _validate_params(origin, params_dict):
-    if origin == REQUEST_QUERY_PARAMS:
-        data = request.args
-    elif origin == REQUEST_BODY:
-        data = request.json
-    else:
-        raise InternalServerError("An internal server error occurred during param validation.")
+def _validate_params(origin, params_dict, data=None):
+    if data is None:
+        if origin == REQUEST_QUERY_PARAMS:
+            data = request.args
+        elif origin == REQUEST_BODY:
+            data = request.json
+        else:
+            raise InternalServerError("An internal server error occurred during param validation.")
     for param_key, param_data in params_dict.iteritems():
-        required = param_data.get("required", False)
-        param_tuple = param_data.get("validation_tuple", [])
-        validate_param_internal(data, param_key, param_tuple, required)
+        if param_data.get("derivated", False):
+            if type(param_data) == dict:
+                if param_data.get("many", False):
+                    for i_param_data in data.get(param_key, []):
+                        _validate_params(origin, params_dict=param_data.get("fields", {}), data=i_param_data)
+                else:
+                    _validate_params(origin, params_dict=param_data.get("fields", {}), data=data.get(param_key))
+        else:
+            required = param_data.get("required", False)
+            param_tuple = param_data.get("validation_tuple", [])
+            validate_param_internal(data, param_key, param_tuple, required)
