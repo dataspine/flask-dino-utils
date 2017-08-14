@@ -1,5 +1,6 @@
-# flask-dino-utils - A toolbox to make API development easier.
+[![Build Status](https://travis-ci.org/dinocloud/flask-dino-utils.svg?branch=master)](https://travis-ci.org/dinocloud/flask-dino-utils)
 
+# flask-dino-utils - A toolbox to make API development easier.
 So, you are already a trained python developer and you love building projects using Flask, but there are some processes that you already do like a robot, like building the logic to paginate your api. How cool would it be if those things could be already wrapped up as possible? Well, search no more. Flask-Dino-Utils is here to help you build robust flask apis in no time. 
 
 ## Assumptions
