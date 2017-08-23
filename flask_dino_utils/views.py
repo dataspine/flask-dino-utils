@@ -64,10 +64,10 @@ class FlaskImprovedView(FlaskView):
                         setattr(new_object, key, derivated_data.get(key))
                 return new_object
             elif create_behavior == ASSOCIATE_EXISTING_OBJECT:
-                existing_object = object_type.query.filter(id_name == derivated_data.get(id_name, None)).first()
+                existing_object = object_type.query.filter(getattr(object_type, id_name) == derivated_data.get(id_name, None)).first()
                 if existing_object is None:
                     raise NotFound("Object of type %s with id %s not found in server. Try changing the id value."
-                                   % (object_type, id_name))
+                                   % (object_type, derivated_data.get(id_name, None)))
                 return existing_object
         return None
 
