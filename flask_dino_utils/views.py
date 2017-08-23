@@ -6,6 +6,7 @@ from pagination import _validate_pagination_parameters, paginated_response
 from sorting import _validate_sorting_parameters, sort
 from filtering import _filter_query
 from validators import _validate_params, REQUEST_BODY
+from werkzeug.exceptions import BadRequest, NotFound
 
 CREATE_NEW_OBJECT = "CREATE_NEW"
 ASSOCIATE_EXISTING_OBJECT = "ASSOCIATE_EXISTING"
@@ -38,16 +39,20 @@ class FlaskImprovedView(FlaskView):
         }
     }
 
-    def __process_derivated_attribute(self, derivated_data, derivated_validation):
+    def __process_derivated_attribute(self, derivated_data, derivated_validation, attr_name=None):
         object_type = derivated_validation.get("object_type", None)
         id_name = derivated_validation.get("id_name", None)
         create_behavior = derivated_validation.get("create_behavior", None)
-        if type(derivated_data) == list and derivated_validation.get("many", True):
-            new_list_objects = list()
-            for items_objects in derivated_data:
-                new_object = self.__process_derivated_attribute(items_objects, derivated_validation)
-                new_list_objects.append(new_object)
-            return new_list_objects
+        if derivated_validation.get("many", True):
+            if type(derivated_data) == list:
+                new_list_objects = list()
+                for items_objects in derivated_data:
+                    new_object = self.__process_derivated_attribute(items_objects, derivated_validation)
+                    new_list_objects.append(new_object)
+                return new_list_objects
+            else:
+                raise BadRequest("Expected list in %s object but obtained %s. Try sending a list or changing to "
+                                 "\"many\" = False in body validation." % (attr_name, type(derivated_data)))
         else:
             if create_behavior == CREATE_NEW_OBJECT:
                 new_object = object_type()
@@ -59,7 +64,10 @@ class FlaskImprovedView(FlaskView):
                         setattr(new_object, key, derivated_data.get(key))
                 return new_object
             elif create_behavior == ASSOCIATE_EXISTING_OBJECT:
-                existing_object = object_type.query.get_or_404(derivated_data.get(id_name, None))
+                existing_object = object_type.query.filter(id_name == derivated_data.get(id_name, None)).first()
+                if existing_object is None:
+                    raise NotFound("Object of type %s with id %s not found in server. Try changing the id value."
+                                   % (object_type, id_name))
                 return existing_object
         return None
 

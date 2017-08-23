@@ -169,7 +169,48 @@ curl http://localhost:5000/api/v1/people?filter=name;eq;Jack$age;gt;20$age;lt;40
 You can deduce in the filter syntax that the filter separator is the special character `$` and the filter logic is composed by: `<filter_key>;<filter_operator>;<filter_value>`. Filter operators can be found [here](http://docs.sqlalchemy.org/en/latest/core/sqlelement.html#sqlalchemy.sql.operators.ColumnOperators). Note: avoid using python underscores.
 
 
+### The Authenticator
 
+Under our security implementation, we have a really simple way of authenticating and authorizing users. The class `Authenticator` under `authenticators` script has all the information needed to provide a basic authentcation method.
+We will assume the following object structure:
 
+```
+User 1----1 Roles 1----n Permission
+```
 
+In this case we're assuming that each user has one role associated and each role has a set of permissions associated to it. Each permission has a field regarding an unique id.
+The `Authenticator` class has some predefined attributes we need to setup in orde to use it:
+
+```python
+from flask_dino_utils.authenticators import Authenticator
+from models import User
+
+authenticator = Authenticator()
+authenticator.USER_OBJECT = User
+authenticator.USERNAME_ATTR = "user_username" 
+authenticator.PASSWORD_ATTR = "user_password"
+authenticator.SUPER_ROLE_ATTR = "user_role.is_super_role"  
+authenticator.PERMISSIONS_ATTR = "user_role.permissions" 
+authenticator.KEY_PERMISSION_ATTR = "user_permission_arn"
+```
+
+You can see different attributes, let me explain them:
+
+* `USER_OBJECT`:User # The object user defined on our model
+* `USERNAME_ATTR`: (Required) The username attribute name to check
+* `PASSWORD_ATTR`: (Required) The password attribute to check. Note: using sample comparation. The password must be encrypted from the beginning.
+* `SUPER_ROLE_ATTR`: (Optional) You can have a boolean value defining that the role is super_role without concerning about permissions
+* `PERMISSIONS_ATTR`: (Optional) if set, each authentication will compare against permissions
+* `KEY_PERMISSION_ATTR`: (Required if defined self.PEERMISSIONS_ATTR), permissions field to compare.
+
+After this you can add the following line to your authenticated methods:
+
+```python
+    def index(self):
+        authenticator.basic_auth(authorization=request.authorization, permission="GetAllUsers")
+        return super(UserView, self).index()
+```
+
+The method `basic_auth` receives the authorization data (required) and the permission uuid. If `permission` is not set, will authenticate any user and move forward.
+In this case you can see that, before doing anything, first it authenticates and authorizates the user.
 
