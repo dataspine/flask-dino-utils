@@ -15,8 +15,9 @@ class Authenticator:
         pass
 
     def __check_user_permissions(self, username, password, permission):
-        user = self.USER_OBJECT.query.filter(getattr(self.USER_OBJECT, self.USERNAME_ATTR).like("%" + username + "%"))\
-        .filter(getattr(self.USER_OBJECT, self.PASSWORD_ATTR).like("%" + password + "%")).first()
+        import pdb; pdb.set_trace()
+        user = self.USER_OBJECT.query.filter(getattr(self.USER_OBJECT, self.USERNAME_ATTR) == username)\
+        .filter(getattr(self.USER_OBJECT, self.PASSWORD_ATTR) == password).first()
         if user is None:
             raise Unauthorized("The username might not exist or password is incorrect")
         if self.SUPER_ROLE_ATTR is not None:
