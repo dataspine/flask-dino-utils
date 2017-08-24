@@ -43,16 +43,12 @@ class FlaskImprovedView(FlaskView):
         object_type = derivated_validation.get("object_type", None)
         id_name = derivated_validation.get("id_name", None)
         create_behavior = derivated_validation.get("create_behavior", None)
-        if derivated_validation.get("many", True):
-            if type(derivated_data) == list:
-                new_list_objects = list()
-                for items_objects in derivated_data:
-                    new_object = self.__process_derivated_attribute(items_objects, derivated_validation)
-                    new_list_objects.append(new_object)
-                return new_list_objects
-            else:
-                raise BadRequest("Expected list in %s object but obtained %s. Try sending a list or changing to "
-                                 "\"many\" = False in body validation." % (attr_name, type(derivated_data)))
+        if derivated_validation.get("many", True) and type(derivated_data) == list:
+            new_list_objects = list()
+            for items_objects in derivated_data:
+                new_object = self.__process_derivated_attribute(items_objects, derivated_validation)
+                new_list_objects.append(new_object)
+            return new_list_objects
         else:
             if create_behavior == CREATE_NEW_OBJECT:
                 new_object = object_type()
