@@ -15,7 +15,6 @@ class Authenticator:
         pass
 
     def __check_user_permissions(self, username, password, permission):
-        import pdb; pdb.set_trace()
         user = self.USER_OBJECT.query.filter(getattr(self.USER_OBJECT, self.USERNAME_ATTR) == username)\
         .filter(getattr(self.USER_OBJECT, self.PASSWORD_ATTR) == password).first()
         if user is None:
