@@ -44,5 +44,8 @@ class Authenticator:
         return user
 
     def basic_auth(self, authorization, permission):
+        if authorization is None or authorization.username is None or authorization.password is None:
+            raise Unauthorized("There are missing authorization parameters. Please send user and password "
+                               "in Authorization header.")
         user = self.__check_user_permissions(authorization.username, authorization.password, permission)
         return user
