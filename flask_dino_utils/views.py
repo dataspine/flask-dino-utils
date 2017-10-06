@@ -55,7 +55,7 @@ class FlaskImprovedView(FlaskView):
                 for key, value in derivated_validation.get("fields", {}).iteritems():
                     if value.get("derivated", False):
                         setattr(new_object, key, self.__process_derivated_attribute(derivated_data.get(key),
-                                                                                    derivated_validation.get(key)))
+                                                                                    value))
                     else:
                         setattr(new_object, key, derivated_data.get(key))
                 return new_object
