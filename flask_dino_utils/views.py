@@ -43,6 +43,11 @@ class FlaskImprovedView(FlaskView):
         object_type = derivated_validation.get("object_type", None)
         id_name = derivated_validation.get("id_name", None)
         create_behavior = derivated_validation.get("create_behavior", None)
+        if derivated_data is None or derivated_data == [] or derivated_data == {}:
+            if derivated_validation.get("required", False):
+                raise BadRequest("A missing required attribute is causing the request to fail.")
+            else:
+                return [] if derivated_validation.get("many", False) else derivated_data
         if derivated_validation.get("many", True) and type(derivated_data) == list:
             new_list_objects = list()
             for items_objects in derivated_data:
