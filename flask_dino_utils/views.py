@@ -19,6 +19,7 @@ class FlaskImprovedView(FlaskView):
     active_field = "active"
     view_model = None
     db_engine = None
+    extra_filters = None
     body_validation = {
         "sample_attribute": {
             "required": True,
@@ -76,7 +77,13 @@ class FlaskImprovedView(FlaskView):
         _validate_sorting_parameters(request.args, self.view_model)
         _validate_pagination_parameters(request.args)
         result = self.view_model.query
-        result = _filter_query(self.view_model, result, request.args.get("filter", None))
+        if request.args.get("filter", None) is None:
+            actual_filter = self.extra_filters
+        else:
+            actual_filter = request.args.get("filter", None)
+            if self.extra_filters is not None:
+                actual_filter += "$" + self.extra_filters
+        result = _filter_query(self.view_model, result, actual_filter)
         sorted_result = sort(request.args, result)
         return paginated_response(request.args, sorted_result, type(self.view_schema))
 
