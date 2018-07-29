@@ -6,7 +6,7 @@ setup(
     name='flask_dino_utils',
     description='Flask utils package to use it among with Flask-Classy and marshmallow',
     url='http://github.com/dinocloud/flask-dino-utils',
-    version='0.1.14',
+    version='0.1.15',
     license='MIT',
     packages=['flask_dino_utils'],
     install_requires=[

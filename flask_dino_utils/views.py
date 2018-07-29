@@ -39,6 +39,14 @@ class FlaskImprovedView(FlaskView):
             }
         }
     }
+    status_codes = {
+        "index": 200,
+        "get": 200,
+        "post": 201,
+        "put": 200,
+        "delete": 204
+    }
+    extra_response = {}
 
     def __process_derivated_attribute(self, derivated_data, derivated_validation, attr_name=None):
         object_type = derivated_validation.get("object_type", None)
@@ -89,7 +97,13 @@ class FlaskImprovedView(FlaskView):
 
     def get(self, id):
         result = self.view_model.query.get_or_404(int(id))
-        return jsonify(self.view_schema.dump(result).data)
+        response_data = jsonify(response=self.view_schema.dump(result).data)
+        if self.extra_response != None and self.extra_response != {}:
+            response_data = {"response": self.view_schema.dump(result).data}
+            response_data.update(self.extra_response)
+        else:
+            response_data = self.view_schema.dump(result).data
+        return jsonify(response_data), self.status_codes.get("get", 200)
 
     def post(self):
         _validate_params(REQUEST_BODY, self.body_validation)
@@ -106,7 +120,12 @@ class FlaskImprovedView(FlaskView):
         except:
             self.db_engine.session.rollback()
             raise
-        return jsonify(self.view_schema.dump(new_object).data), 201
+        if self.extra_response != None and self.extra_response != {}:
+            response_data = {"response": self.view_schema.dump(new_object).data}
+            response_data.update(self.extra_response)
+        else:
+            response_data = self.view_schema.dump(new_object).data
+        return jsonify(response_data), self.status_codes.get("post", 201)
 
     def put(self, id):
         _validate_params(REQUEST_BODY, self.body_validation)
@@ -123,7 +142,12 @@ class FlaskImprovedView(FlaskView):
         except:
             self.db_engine.session.rollback()
             raise
-        return jsonify(self.view_schema.dump(merged_object).data), 200
+        if self.extra_response != None and self.extra_response != {}:
+            response_data = {"response": self.view_schema.dump(merged_object).data}
+            response_data.update(self.extra_response)
+        else:
+            response_data = self.view_schema.dump(merged_object).data
+        return jsonify(response_data), self.status_codes.get("put", 200)
 
     def delete(self, id):
         deleted_object = self.view_model.query.get_or_404(int(id))
@@ -137,5 +161,8 @@ class FlaskImprovedView(FlaskView):
         except:
             self.db_engine.session.rollback()
             raise
-        return jsonify({"message": "Successfully deleted item"}), 204
+        response_data = {"message": "Successfully deleted item"}
+        if self.extra_response != None and self.extra_response != {}:
+            response_data.update(self.extra_response)
+        return jsonify(response_data), self.status_codes.get("delete", 204)
 
