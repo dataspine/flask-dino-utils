@@ -104,7 +104,7 @@ def _validate_params(origin, params_dict, data=None):
             data = request.json
         else:
             raise InternalServerError("An internal server error occurred during param validation.")
-    for param_key, param_data in params_dict.iteritems():
+    for param_key, param_data in params_dict.items():
         if param_data.get("derivated", False):
             if type(param_data) == dict:
                 if param_data.get("many", False):

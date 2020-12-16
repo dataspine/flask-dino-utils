@@ -23,10 +23,7 @@ def _filter_query(model_class, query, filter_string):
             filter_expression = column.in_(filter_value.split(','))
         else:
             try:
-                attr = filter(
-                    lambda e: hasattr(column, e % filter_operator),
-                    ['%s', '%s_', '__%s__']
-                )[0] % filter_operator
+                attr = [e for e in ['%s', '%s_', '__%s__'] if hasattr(column, e % filter_operator)][0] % filter_operator
             except IndexError:
                 raise BadRequest('Invalid filter operator: %s' % filter_operator)
             if filter_value == 'null':

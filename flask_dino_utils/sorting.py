@@ -1,6 +1,6 @@
 from werkzeug.exceptions import BadRequest
 from functools import update_wrapper
-from validators import validate_param_internal, VALID_VALUES_VALIDATOR
+from .validators import validate_param_internal, VALID_VALUES_VALIDATOR
 from flask import request
 
 VALID_SORT_DIRECTIONS = ["asc", "desc"]
@@ -9,7 +9,7 @@ VALID_SORT_DIRECTIONS = ["asc", "desc"]
 def _validate_sorting_parameters(args, object_type):
     validate_param_internal(request.args, "sort_dir", [(VALID_VALUES_VALIDATOR, VALID_SORT_DIRECTIONS)])
     sort_field = request.args.get("sort_field", None)
-    if sort_field is not None and sort_field not in object_type.__table__.columns.keys():
+    if sort_field is not None and sort_field not in list(object_type.__table__.columns.keys()):
         raise BadRequest('The sort_field %s is not a valid value' % sort_field)
 
 

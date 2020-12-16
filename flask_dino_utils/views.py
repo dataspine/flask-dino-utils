@@ -1,11 +1,11 @@
 from flask_classy import FlaskView
 from flask import request, jsonify
-from validators import TYPE_VALIDATOR
+from .validators import TYPE_VALIDATOR
 from marshmallow import *
-from pagination import _validate_pagination_parameters, paginated_response
-from sorting import _validate_sorting_parameters, sort
-from filtering import _filter_query
-from validators import _validate_params, REQUEST_BODY
+from .pagination import _validate_pagination_parameters, paginated_response
+from .sorting import _validate_sorting_parameters, sort
+from .filtering import _filter_query
+from .validators import _validate_params, REQUEST_BODY
 from werkzeug.exceptions import BadRequest, NotFound
 
 CREATE_NEW_OBJECT = "CREATE_NEW"
@@ -23,7 +23,7 @@ class FlaskImprovedView(FlaskView):
     body_validation = {
         "sample_attribute": {
             "required": True,
-            "validation_tuple": [(TYPE_VALIDATOR, unicode)]
+            "validation_tuple": [(TYPE_VALIDATOR, str)]
         },
         "derivated_attribute": {
             "derivated": True,
@@ -34,7 +34,7 @@ class FlaskImprovedView(FlaskView):
             "fields": {
                 "attribute1": {
                     "required": True,
-                    "validation_tuple": [(TYPE_VALIDATOR, unicode)]
+                    "validation_tuple": [(TYPE_VALIDATOR, str)]
                 }
             }
         }
@@ -66,7 +66,7 @@ class FlaskImprovedView(FlaskView):
         else:
             if create_behavior == CREATE_NEW_OBJECT:
                 new_object = object_type()
-                for key, value in derivated_validation.get("fields", {}).iteritems():
+                for key, value in derivated_validation.get("fields", {}).items():
                     if value.get("derivated", False):
                         setattr(new_object, key, self.__process_derivated_attribute(derivated_data.get(key),
                                                                                     value))
@@ -109,10 +109,10 @@ class FlaskImprovedView(FlaskView):
         _validate_params(REQUEST_BODY, self.body_validation)
         data = request.json
         new_object = self.view_model()
-        for key, value in data.iteritems():
+        for key, value in data.items():
             if type(value) in [list, dict]:
                 setattr(new_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key)))
-            elif key != self.id_name and key in self.view_model.__table__.columns.keys():
+            elif key != self.id_name and key in list(self.view_model.__table__.columns.keys()):
                 setattr(new_object, key, value)
         self.db_engine.session.add(new_object)
         try:
@@ -131,10 +131,10 @@ class FlaskImprovedView(FlaskView):
         _validate_params(REQUEST_BODY, self.body_validation)
         merged_object = self.view_model.query.get_or_404(int(id))
         data = request.json
-        for key, value in data.iteritems():
+        for key, value in data.items():
             if type(value) in [list, dict]:
                 setattr(merged_object, key, self.__process_derivated_attribute(value, self.body_validation.get(key)))
-            elif key != self.id_name and key in self.view_model.__table__.columns.keys():
+            elif key != self.id_name and key in list(self.view_model.__table__.columns.keys()):
                 setattr(merged_object, key, value)
         self.db_engine.session.merge(merged_object)
         try:
@@ -151,7 +151,7 @@ class FlaskImprovedView(FlaskView):
 
     def delete(self, id):
         deleted_object = self.view_model.query.get_or_404(int(id))
-        if self.active_field is None or self.active_field not in self.view_model.__table__.columns.keys():
+        if self.active_field is None or self.active_field not in list(self.view_model.__table__.columns.keys()):
             self.db_engine.session.delete(deleted_object)
         else:
             setattr(deleted_object, self.active_field, False)

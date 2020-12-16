@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from functools import update_wrapper
-from validators import validate_param_internal, NUMERIC_STRING_VALIDATOR, MIN_VALIDATOR
+from .validators import validate_param_internal, NUMERIC_STRING_VALIDATOR, MIN_VALIDATOR
 from marshmallow import Schema, fields
 
 
